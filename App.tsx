@@ -1,118 +1,134 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
+import React, { useState } from 'react';
+import { StyleSheet, Text, View, TextInput, Button, ScrollView, Dimensions, TouchableOpacity  } from 'react-native';
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
-import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
-  StyleSheet,
-  Text,
-  useColorScheme,
-  View,
-} from 'react-native';
+export default function App() {
+  const [todoText, setTodoText] = useState('');
+  const [todos, setTodos] = useState([]);
+  const [finished, setFinished] = useState([]);
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
+  const addTodo = () => {
+    if (todoText.trim() !== '') {
+      setTodos([...todos, { id: Date.now(), text: todoText }]);
+      setTodoText('');
+    }
+  };
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
+  const removeTodo = (id) => {
+    setTodos(todos.filter(todo => todo.id !== id));
+  };
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
+  const markTodoAsDone = (id) => {
+    const todoToMove = todos.find(todo => todo.id === id);
+    setFinished([...finished, todoToMove]);
+    removeTodo(id);
+  };
+
+  const removeFinished = (id) => {
+    setFinished(finished.filter(todo => todo.id !== id));
+  };
+
   return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
+    <View style={styles.container}>
+      <Text style={styles.title}>Todo App</Text>
+      <View style={styles.inputContainer}>
+        <TextInput
+          style={styles.input}
+          placeholder="Enter Todo"
+          value={todoText}
+          onChangeText={setTodoText}
+        />
+        <Button title="Add" onPress={addTodo} />
+      </View>
+      <ScrollView style={styles.listContainer}>
+        {todos.map(todo => (
+          <View key={todo.id} style={styles.todoItem}>
+            <Text>{todo.text}</Text>
+            <View style={styles.buttons}>
+            <TouchableOpacity style={styles.button} onPress={() => markTodoAsDone(todo.id)}>
+              <Text style={styles.buttonText}>Done</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.button} onPress={() => removeTodo(todo.id)}>
+              <Text style={styles.buttonText}>Delete</Text>
+            </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+      <View style={{backgroundColor: 'grey', height:12, width: Dimensions.get('window').width}}/>
+      <ScrollView style={[styles.listContainer, styles.doneContainer]}>
+        {finished.map(todo => (
+          <View key={todo.id} style={styles.todoItem}>
+            <Text>{todo.text}</Text>
+            <View style={styles.buttons}>
+              <TouchableOpacity title="Delete" onPress={() => removeFinished(todo.id)} style={styles.button}>
+                <Text style={styles.buttonText}>Delete</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
     </View>
   );
 }
 
-function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
-  return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
-  );
-}
-
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
+    alignItems: 'center',
+    justifyContent: 'flex-start',
+    padding: 15,
   },
-  sectionTitle: {
+  title: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
+  subtitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 10,
+    marginTop: 20,
   },
-  highlight: {
-    fontWeight: '700',
+  inputContainer: {
+    flexDirection: 'row',
+    marginBottom: 20,
   },
+  input: {
+    flex: 1,
+    height: 40,
+    borderColor: 'gray',
+    borderWidth: 1,
+    marginRight: 10,
+    paddingHorizontal: 10,
+  },
+  listContainer: {
+    flex: 1,
+    width: '100%',
+  },
+  todoItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+    padding: 10,
+    backgroundColor: '#f0f0f0',
+    borderRadius: 5,
+  },
+  buttons: {
+    flexDirection: 'row',
+  },
+  button: {
+    marginHorizontal: 10,
+    backgroundColor: '#5BA8FF',
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+  },
+  buttonText: {
+    color: 'white', // Adjust text color
+  },
+  doneContainer: {
+    marginTop: 10,
+  }
 });
-
-export default App;
